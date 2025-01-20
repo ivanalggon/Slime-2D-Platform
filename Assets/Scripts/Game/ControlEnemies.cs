@@ -10,11 +10,15 @@ public class ControlEnemies : MonoBehaviour
     private Rigidbody2D enemyRigidBody; // Referencia al Rigidbody2D del enemigo
     private Animator animacion; // Referencia al Animator del enemigo
     private Transform jugador; // Referencia al transform del jugador
+    private float posicionYInicial; // Guardar la posición inicial del eje Y
 
     void Start()
     {
         enemyRigidBody = GetComponent<Rigidbody2D>();
         animacion = GetComponent<Animator>();
+
+        // Guardar la posición inicial del eje Y
+        posicionYInicial = transform.position.y;
 
         // Encuentra al jugador una vez al iniciar
         GameObject player = GameObject.Find("Player");
@@ -41,9 +45,15 @@ public class ControlEnemies : MonoBehaviour
         else
         {
             // Detener movimiento y animación si está fuera del rango
-            enemyRigidBody.velocity = Vector2.zero;
+            enemyRigidBody.velocity = new Vector2(0, enemyRigidBody.velocity.y); // Solo detener en X
             animacion.SetBool("isWalking", false);
             animacion.SetBool("isIdle", true);
+        }
+
+        // Fijar la posición en el eje Y mientras no esté cayendo
+        if (enemyRigidBody.velocity.y == 0)
+        {
+            transform.position = new Vector2(transform.position.x, posicionYInicial);
         }
     }
 
@@ -52,8 +62,8 @@ public class ControlEnemies : MonoBehaviour
         // Calcular dirección hacia el jugador
         Vector2 direccion = (jugador.position - transform.position).normalized;
 
-        // Establecer la velocidad del Rigidbody2D
-        enemyRigidBody.velocity = direccion * velocidad;
+        // Solo moverse en el eje X
+        enemyRigidBody.velocity = new Vector2(direccion.x * velocidad, enemyRigidBody.velocity.y);
 
         // Manejar animaciones
         animacion.SetBool("isWalking", true);
@@ -61,9 +71,9 @@ public class ControlEnemies : MonoBehaviour
 
         // Opcional: Ajustar la dirección de la animación para que el enemigo mire hacia el jugador
         if (direccion.x > 0)
-            transform.localScale = new Vector3(-1, 1, 1); // Mirar hacia la derecha
+            transform.localScale = new Vector2(-1, 1); // Mirar hacia la derecha
         else if (direccion.x < 0)
-            transform.localScale = new Vector3(1, 1, 1); // Mirar hacia la izquierda
+            transform.localScale = new Vector2(1, 1); // Mirar hacia la izquierda
     }
 
     void OnCollisionStay2D(Collision2D collision)
