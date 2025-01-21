@@ -15,7 +15,7 @@ GameObject:
   - component: {fileID: 1077943027346519115}
   - component: {fileID: 7032248183400166477}
   m_Layer: 0
-  m_Name: Enemigos
+  m_Name: Slime
   m_TagString: Enemy
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -129,10 +129,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   velocidad: 2
   rangoDeteccion: 5
-  longitudRaycast: 0.1
-  ground:
-    serializedVersion: 2
-    m_Bits: 8
 --- !u!61 &1077943027346519115
 BoxCollider2D:
   m_ObjectHideFlags: 0

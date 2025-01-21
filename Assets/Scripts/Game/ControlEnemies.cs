@@ -10,15 +10,11 @@ public class ControlEnemies : MonoBehaviour
     private Rigidbody2D enemyRigidBody; // Referencia al Rigidbody2D del enemigo
     private Animator animacion; // Referencia al Animator del enemigo
     private Transform jugador; // Referencia al transform del jugador
-    private float posicionYInicial; // Guardar la posición inicial del eje Y
 
     void Start()
     {
         enemyRigidBody = GetComponent<Rigidbody2D>();
         animacion = GetComponent<Animator>();
-
-        // Guardar la posición inicial del eje Y
-        posicionYInicial = transform.position.y;
 
         // Encuentra al jugador una vez al iniciar
         GameObject player = GameObject.Find("Player");
@@ -49,12 +45,6 @@ public class ControlEnemies : MonoBehaviour
             animacion.SetBool("isWalking", false);
             animacion.SetBool("isIdle", true);
         }
-
-        // Fijar la posición en el eje Y mientras no esté cayendo
-        if (enemyRigidBody.velocity.y == 0)
-        {
-            transform.position = new Vector2(transform.position.x, posicionYInicial);
-        }
     }
 
     private void MovimientoEnemigo()
@@ -76,35 +66,39 @@ public class ControlEnemies : MonoBehaviour
             transform.localScale = new Vector2(1, 1); // Mirar hacia la izquierda
     }
 
-    void OnCollisionStay2D(Collision2D collision)
-    {
-        if (collision.gameObject.CompareTag("Player")) // Verificamos que el objeto en colisión sea el jugador
-        {
-            // Obtener el Rigidbody2D del jugador
-            Rigidbody2D jugadorRB = collision.gameObject.GetComponent<Rigidbody2D>();
-
-            if (jugadorRB != null) // Verificamos que el jugador tenga un Rigidbody2D
-            {
-                // Calcular la dirección de empuje, apuntando desde el enemigo al jugador
-                Vector2 direccionEmpuje = (collision.transform.position - transform.position).normalized;
-
-                // Aplicar la fuerza de empuje al jugador usando AddForce en lugar de modificar directamente la velocidad
-                float fuerzaEmpuje = 1f; // Ajusta esta fuerza según lo que desees
-                jugadorRB.AddForce(direccionEmpuje * fuerzaEmpuje, ForceMode2D.Impulse); // Aplicamos un impulso al jugador
-            }
-        }
-    }
-
     void OnCollisionEnter2D(Collision2D collision)
     {
         if (collision.gameObject.CompareTag("Player"))
         {
-            // Detener el movimiento del jugador cuando la colisión termina
             Rigidbody2D jugadorRB = collision.gameObject.GetComponent<Rigidbody2D>();
-            if (jugadorRB != null)
+
+            // Verificar si el jugador está cayendo desde arriba
+            if (jugadorRB != null && jugadorRB.velocity.y < 0) // Si el jugador está cayendo
             {
-                jugadorRB.velocity = Vector2.zero; // Detener el movimiento del jugador al salir de la colisión
+                // Activar la animación de muerte del enemigo
+                Animator enemyAnimator = GetComponent<Animator>();
+                if (enemyAnimator != null)
+                {
+                    enemyAnimator.SetBool("isDead", true);
+                }
+
+                // Destruir al enemigo después de un pequeño retraso (si tienes una animación)
+                Destroy(gameObject, 0.5f);
+
+                // Aplicar un rebote al jugador
+                float fuerzaRebote = 7f; // Ajusta la fuerza de rebote
+                jugadorRB.velocity = new Vector2(jugadorRB.velocity.x, fuerzaRebote);
+            }
+            else
+            {
+                // Si el jugador no está cayendo, aplicar daño al jugador
+                PlayerMovement playerScript = collision.gameObject.GetComponent<PlayerMovement>();
+                if (playerScript != null)
+                {
+                    playerScript.RecibirDaño();
+                }
             }
         }
     }
+
 }
