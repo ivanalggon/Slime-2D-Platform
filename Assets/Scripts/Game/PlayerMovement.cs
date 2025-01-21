@@ -11,6 +11,7 @@ public class PlayerMovement : MonoBehaviour
     float jumpForce = 10f;
     bool isGrounded = false;
     private bool invulnerable = false; // Indica si el jugador es invulnerable
+    bool isWallSliding = false;
 
     Rigidbody2D rb;
     Animator animacion;
@@ -25,6 +26,8 @@ public class PlayerMovement : MonoBehaviour
 
     [SerializeField] private LayerMask groundLayer;    // Capa para el suelo
     [SerializeField] private Transform feetTransform;  // Punto para detectar el suelo
+    [SerializeField] private Transform wallCheck;      // Punto para detectar paredes
+    [SerializeField] private float wallSlideSpeed = 5f;  // Velocidad al deslizarse por la pared
 
     // Variables nuevas
     public int vida = 5;  // Vida del jugador
@@ -69,6 +72,23 @@ public class PlayerMovement : MonoBehaviour
             animacion.SetBool("isJumping", false);
         }
     }
+    private bool IsTouchingWall()
+    {
+        return Physics2D.OverlapCircle(wallCheck.position, 0.2f, groundLayer);
+    }
+
+    private void WallSlide()
+    {
+        if (IsTouchingWall() && !isGrounded)
+        {
+            isWallSliding = true;
+            rb.velocity = new Vector2(rb.velocity.x, -wallSlideSpeed);
+        }
+        else
+        {
+            isWallSliding = false;
+        }
+    }
 
     private void FixedUpdate()
     {
@@ -77,6 +97,8 @@ public class PlayerMovement : MonoBehaviour
 
         animacion.SetFloat("xVelocity", Mathf.Abs(rb.velocity.x));
         animacion.SetFloat("yVelocity", rb.velocity.y);
+
+        WallSlide();
     }
 
     void FlipSprite()
