@@ -191,6 +191,11 @@ public class PlayerMovement : MonoBehaviour
         {
             DañoAgua();
         }
+        if (collision.gameObject.CompareTag("Goal"))
+        {
+            //cargar la escena de victoria
+            SceneManager.LoadScene("Win");
+        }
     }
 
 
